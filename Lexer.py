@@ -25,6 +25,9 @@ def isLiteral(char):
 def isOperator(char):
     return char in '+/*-=!^><|&'
 
+def isMultiCharOperator(chars):
+    return chars in {'>=', '<=', '==', '!=', '||', '&&'}
+
 
 def keyWord(char):
     keyword = {'if', 'else', 'for', 'while'}
