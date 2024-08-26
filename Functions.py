@@ -95,6 +95,44 @@ def If(condition, action):
 def Else(action):
     action()
 
+def Concat(a, b):
+    if isinstance(a, str) and isinstance(b, str):
+        return a + b
+    elif isinstance(a, list) and isinstance(b, list):
+        return a + b
+    else:
+        raise TypeError('Concat function only supports concatenation of two strings or two lists.')
 
+    def Tuple(*args):
+        return tuple(args)
 
+    def SequenceSort(sequence):
+        return sorted(sequence)
+
+    def ConcatTuples(tuple1, tuple2):
+        if isinstance(tuple1, tuple) and isinstance(tuple2, tuple):
+            return tuple1 + tuple2
+        else:
+            raise TypeError('ConcatTuples function only supports tuple concatenation.')
+
+    def GetItem(sequence, index):
+        return sequence[index]
+
+    def Index(sequence, item):
+        return sequence.index(item)
+
+    def Length(sequence):
+        return len(sequence)
+
+    def Split(string, delimiter=None):
+        return string.split(delimiter)
+
+    def Replace(string, old, new):
+        return string.replace(old, new)
+
+    def isUpper(string):
+        return string.isupper()
+
+    def isLower(string):
+        return string.islower()
 

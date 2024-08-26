@@ -1,90 +1,58 @@
-def isWhiteSpace(char):
-    return char in ' \t\n\r'
-
-
-def isLetter(char):
-    return ('a' <= char <= 'z') or ('A' <= char <= 'Z') or (char == '_') or '0' <= char <= '9'
-
-
-def isPunctuation(char):
-    return char in '(){}[],;'
-
-
-def isLiteral(char):
-    if char[0] == '$':  #using '$' for string definition
-        return True
-    if char == 'true' or char == 'false':  #boolean literal
-        return True
-    try:  #check for int literal
-        float(char)
-        return True
-    except ValueError:
-        return False
-
-
-def isOperator(char):
-    return char in '+/*-=!^><|&'
-
-def isMultiCharOperator(chars):
-    return chars in {'>=', '<=', '==', '!=', '||', '&&'}
-
-
-def keyWord(char):
-    keyword = {'if', 'else', 'for', 'while'}
-    return char in keyword
-
-
-def isFunction(identifier):
-    functions = {
-        'Min', 'Max',
-        'Array', 'Length', 'Index', 'Add(i)', 'Remove(i)', 'Append',
-        'Tuple', 'GetItem',
-        'Split', 'Replace', 'isUpper', 'isLower', 'Concat'
-    }
-    return identifier in functions
-
+# Lexer.py
 
 def tokenize(string):
     tokens = []
-    current_token = ''
     i = 0
 
     while i < len(string):
         char = string[i]
-        if isWhiteSpace(char):
+
+        if char.isspace():
             i += 1
             continue
 
-        if isLetter(char):
-            current_token = char
+        if char.isalpha() or char == '_':
+            identifier = char
             i += 1
-            while i < len(string) and isLetter(string[i]):
-                current_token += string[i]
+            while i < len(string) and (string[i].isalnum() or string[i] == '_'):
+                identifier += string[i]
                 i += 1
-            if keyWord(current_token):
-                tokens.append(('KEYWORD', current_token))
-            elif isFunction(current_token):
-                tokens.append(('FUNCTION', current_token))
-            elif isLiteral(current_token):
-                tokens.append(('LITERAL', current_token))
+            if identifier in ['If', 'While']:
+                tokens.append(('KEYWORD', identifier))
+            elif identifier in ['Add', 'Sub', 'Mul', 'Div', 'Assign', 'Greater', 'Smaller', 'Concat']:
+                tokens.append(('FUNCTION', identifier))
             else:
-                tokens.append(('IDENTIFIER', current_token))
+                tokens.append(('IDENTIFIER', identifier))
             continue
 
-        if i < len(string) - 1 and string[i:i + 2] in {'>=', '<=', '==', '!=', '||', '&&'}:  #two digits operators
-            tokens.append(('OPERATOR', string[i:i + 2]))
-            i += 2
-            continue
-
-        if isOperator(char):  #one digit operators
-            tokens.append(('OPERATOR', char))
+        if char.isdigit():
+            number = char
             i += 1
+            while i < len(string) and string[i].isdigit():
+                number += string[i]
+                i += 1
+            tokens.append(('NUMBER', int(number)))
             continue
 
-        if isPunctuation(char):
+        if char == '$':
+            string_literal = ''
             i += 1
-            tokens.append(('PUNC',char))
+            while i < len(string) and string[i] != '$':
+                string_literal += string[i]
+                i += 1
+            if i < len(string) and string[i] == '$':
+                tokens.append(('STRING', string_literal))
+                i += 1
+            else:
+                raise ValueError("Unterminated string literal")
+            continue
+
+        if char in '(),':
+            tokens.append(('PUNCTUATION', char))
+            i += 1
             continue
 
         raise ValueError(f"Unexpected character: {char}")
+
+    print("Lexer output:", tokens)  # Debug output
     return tokens
