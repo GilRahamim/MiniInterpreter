@@ -1,6 +1,5 @@
 from Lexer import tokenize
-from Parser import parse
-import Semantic
+from Parser import Parser
 from AST import ProgramNode, AssignmentNode, ExpressionNode, FactorNode, IfStatementNode, WhileStatementNode, BlockNode
 
 
@@ -101,15 +100,14 @@ def run_tests():
 
     for i, test in enumerate(test_cases):
         print(f"Running Test {i + 1}: {test['code']}")
-        tokens = tokenize(test["code"])  # Directly call the tokenize function
-        parser = Parser(tokens)
-        ast = parser.parse()
+        tokens = tokenize(test["code"])
+        print(f"Tokens: {tokens}")  # Print the tokens to see what the lexer produces
+        ast = parse(tokens)
 
         if ast == test["expected_ast"]:
             print(f"Test {i + 1} Passed!\n")
         else:
             print(f"Test {i + 1} Failed.\nExpected: {test['expected_ast']}\nGot: {ast}\n")
-
 
 def main():
     run_tests()
