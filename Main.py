@@ -1,97 +1,90 @@
-# Main.py
 
-from Lexer import tokenize
-from Parser import Parser
-from AST import ProgramNode, AssignmentNode, ExpressionNode, FactorNode, IfStatementNode, WhileStatementNode, BlockNode
-from Semantic import SemanticAnalyzer
+from Lexer import *
+from Parser import *
+from Semantic import *
+from Functions import *
 
 def print_ast_tree(node, prefix="", is_last=True):
+    """
+    Print the AST tree in a hierarchical format.
+
+    Args:
+    node: The current node in the AST.
+    prefix (str): The prefix to use for the current line.
+    is_last (bool): Whether the current node is the last child of its parent.
+    """
     if node is None:
         return
 
-    print(prefix, end="")
-    if is_last:
-        print("`- ", end="")
-        prefix += "   "
-    else:
-        print("|- ", end="")
-        prefix += "|  "
+    Print(Concat(prefix, "`- " if is_last else "|- "), end="")
+    new_prefix = Concat(prefix, "   " if is_last else "|  ")
 
     if isinstance(node, ProgramNode):
-        print("Program")
+        Print("Program")
         for i, statement in enumerate(node.statements):
-            print_ast_tree(statement, prefix, i == len(node.statements) - 1)
+            print_ast_tree(statement, new_prefix, Equal(i, Sub(Length(node.statements), 1)))
     elif isinstance(node, ExpressionNode):
-        print(f"Expression ({node.operator})")
-        print_ast_tree(node.left, prefix, False)
+        Print(Concat("Expression (", node.operator, ")"))
+        print_ast_tree(node.left, new_prefix, False)
         if isinstance(node.right, list):
             for i, arg in enumerate(node.right):
-                print_ast_tree(arg, prefix, i == len(node.right) - 1)
+                print_ast_tree(arg, new_prefix, Equal(i, Sub(Length(node.right), 1)))
         else:
-            print_ast_tree(node.right, prefix, True)
+            print_ast_tree(node.right, new_prefix, True)
     elif isinstance(node, FactorNode):
-        print(f"Factor: {node.value}")
+        Print(Concat("Factor: ", str(node.value)))
     elif isinstance(node, IfStatementNode):
-        print("If Statement")
-        print_ast_tree(node.condition, prefix, False)
-        print_ast_tree(node.if_block, prefix, node.else_block is None)
+        Print("If Statement")
+        print_ast_tree(node.condition, new_prefix, False)
+        print_ast_tree(node.if_block, new_prefix, node.else_block is None)
         if node.else_block:
-            print_ast_tree(node.else_block, prefix, True)
+            print_ast_tree(node.else_block, new_prefix, True)
     elif isinstance(node, WhileStatementNode):
-        print("While Statement")
-        print_ast_tree(node.condition, prefix, False)
-        print_ast_tree(node.block, prefix, True)
+        Print("While Statement")
+        print_ast_tree(node.condition, new_prefix, False)
+        print_ast_tree(node.block, new_prefix, True)
     elif isinstance(node, BlockNode):
-        print("Block")
+        Print("Block")
         for i, statement in enumerate(node.statements):
-            print_ast_tree(statement, prefix, i == len(node.statements) - 1)
+            print_ast_tree(statement, new_prefix, Equal(i, Sub(Length(node.statements), 1)))
     else:
-        print(f"Unknown Node Type: {type(node)}")
+        Print(Concat("Unknown Node Type: ", str(type(node))))
 
 def run_tests():
+    """
+    Run a series of test cases to verify the functionality of the interpreter.
+    """
     test_cases = [
-        {
-            "code": "Assign(x, 5)",
-        },
-        {
-            "code": "Assign(x, 10) Assign(y, Add(x, Mul(2, 3)))",
-        },
-        {
-            "code": "Assign(x, 7) If(Greater(x, 5), Assign(y, Sub(x, 1)), Assign(y, Add(x, 1)))",
-        },
-        {
-            "code": "Assign(y, 1) While(Smaller(y, 10), Assign(y, Add(y, 1)))",
-        },
-        {
-            "code": "Assign(a, 1) Assign(b, 2) Assign(c, 3) Assign(d, 4) Assign(e, 5) Assign(result, Div(Mul(Add(a, b), Sub(c, d)), e))",
-        },
-        {
-            "code": "Assign(x, 5) Assign(y, Add(x, 3))",
-        },
-        {
-            "code": "Assign(name, $John Doe$) Assign(greeting, Concat($Hello, $, name))",
-        }
+        "Assign(x, 5)",
+        "Assign(x, 10) Assign(y, Add(x, Mul(2, 3)))",
+        "Assign(x, 7) If(Greater(x, 5), Assign(y, Sub(x, 1)), Assign(y, Add(x, 1)))",
+        "Assign(y, 1) While(Smaller(y, 5), Assign(y, Add(y, 1)))",
+        "Assign(a, 1) Assign(b, 2) Assign(result, Add(a, b))",
+        "Assign(name, $John$) Assign(greeting, Concat($Hello, $, name))",
+        "Assign(x, 5) Assign(y, 3) Assign(result, Greater(x, y))"
     ]
 
-    for i, test in enumerate(test_cases):
-        print(f"\nRunning Test {i + 1}: {test['code']}")
-        tokens = tokenize(test["code"])
-        print(f"Tokens: {tokens}")
-        ast = Parser.parse(tokens)
+    for i, test_code in enumerate(test_cases):
+        Print(Concat("\nRunning Test ", str(Add(i, 1)), ":"))
+        Print(Concat("Code: ", test_code))
 
-        print("\nGenerated AST Tree:")
+        tokens = tokenize(test_code)
+        ast = Parser.parse(tokens)
+        Print("\nGenerated AST Tree:")
         print_ast_tree(ast)
 
-        # Semantic Analysis
-        print("\nPerforming Semantic Analysis:")
+        Print("\nPerforming Semantic Analysis:")
         semantic_analyzer = SemanticAnalyzer()
         try:
             semantic_analyzer.analyze(ast)
-            print(semantic_analyzer.get_summary())
+            Print(semantic_analyzer.get_summary())
         except ValueError as e:
-            print(f"Semantic Analysis: Failed - {str(e)}")
+            Print(Concat("Semantic Analysis: Failed - ", str(e)))
 
 def main():
+    """
+    The main entry point of the program. Runs the test suite.
+    """
     run_tests()
 
 if __name__ == "__main__":
